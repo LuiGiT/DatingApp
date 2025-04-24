@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Member } from '../_models/member';
 import { of, tap } from 'rxjs';
@@ -9,7 +9,6 @@ import { Photo } from '../_models/photo';
   providedIn: 'root'
 })
 export class MembersService {
-
   private http = inject(HttpClient);
   baseUrl = environment.apiUrl;
   members = signal<Member[]>([]);
@@ -21,8 +20,9 @@ export class MembersService {
   }
 
   getMember(username: string) {
-    const member = this.members().find(x => x.username == username);
-    if(member !== undefined) return of(member);
+    const member = this.members().find(x => x.username === username);
+    if (member !== undefined) return of(member);
+
     return this.http.get<Member>(this.baseUrl + 'users/' + username);
   }
 
@@ -34,7 +34,6 @@ export class MembersService {
       })
     )
   }
-
 
   setMainPhoto(photo: Photo) {
     return this.http.put(this.baseUrl + 'users/set-main-photo/' + photo.id, {}).pipe(
@@ -56,7 +55,7 @@ export class MembersService {
           if (m.photos.includes(photo)) {
             m.photos = m.photos.filter(x => x.id !== photo.id)
           }
-          return m;
+          return m
         }))
       })
     )

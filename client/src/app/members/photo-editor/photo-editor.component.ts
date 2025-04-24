@@ -1,11 +1,11 @@
-import { Component, inject, input, OnInit, output } from '@angular/core';
+import {Component, OnInit, inject, input, output} from '@angular/core';
 import { Member } from '../../_models/member';
-import { AccountService } from '../../_services/account.service';
-import { MembersService } from '../../_services/members.service';
-import { Photo } from '../../_models/photo';
 import { DecimalPipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
-import { FileUploader, FileUploadModule } from 'ng2-file-upload';
+import { FileUploadModule, FileUploader } from 'ng2-file-upload';
+import { AccountService } from '../../_services/account.service';
 import { environment } from '../../../environments/environment';
+import { Photo } from '../../_models/photo';
+import { MembersService } from '../../_services/members.service';
 
 @Component({
   selector: 'app-photo-editor',
@@ -14,7 +14,7 @@ import { environment } from '../../../environments/environment';
   templateUrl: './photo-editor.component.html',
   styleUrl: './photo-editor.component.css'
 })
-export class PhotoEditorComponent implements OnInit{
+export class PhotoEditorComponent implements OnInit {
   private accountService = inject(AccountService);
   private memberService = inject(MembersService);
   member = input.required<Member>();
@@ -70,7 +70,7 @@ export class PhotoEditorComponent implements OnInit{
       autoUpload: false,
       maxFileSize: 10 * 1024 * 1024,
     });
-    
+
     this.uploader.onAfterAddingFile = (file) => {
       file.withCredentials = false
     }
@@ -80,6 +80,20 @@ export class PhotoEditorComponent implements OnInit{
       const updatedMember = {...this.member()}
       updatedMember.photos.push(photo);
       this.memberChange.emit(updatedMember);
+      if (photo.isMain) {
+        const user = this.accountService.currentUser();
+        if (user) {
+          user.photoUrl = photo.url;
+          this.accountService.setCurrentUser(user)
+        }
+        updatedMember.photoUrl = photo.url;
+        updatedMember.photos.forEach(p => {
+          if (p.isMain) p.isMain = false;
+          if (p.id === photo.id) p.isMain = true;
+        });
+        this.memberChange.emit(updatedMember)
+      }
     }
   }
+
 }
